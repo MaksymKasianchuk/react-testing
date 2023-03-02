@@ -1,28 +1,34 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen,fireEvent } from '@testing-library/react';
 import App from './App';
 
 describe("App", () => {
-  it('renders App component', () => {
+  test("renders App component", async () => {
     render(<App />);
-    expect(screen.queryByText(/searches for react/i)).toBeNull(); // markup has no such element
+    expect(screen.queryByText(/Logged in as/i)).toBeNull();               // markup has no h2 tag
+    expect(await screen.findByText(/Logged in as/i)).toBeInTheDocument(); // await promise and get h2 tag in markup
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "React" },
+    });                                                                   //test input change with "React" value
+    expect(screen.getByText(/Searches for React/i)).toBeInTheDocument();//get p tag with text after input change
   });
-  it('async user fetch', async () => {
-    render(<App />);
-    expect(screen.queryByText(/Logged in as/i)).toBeNull();                // check if markup has no element with this text
-    // screen.debug();                                                    // can see that markup has no h2 tag
-    expect(await screen.findByText(/Logged in as/i)).toBeInTheDocument(); // then after await async operation we check that markup has element with this text
-    // screen.debug();                                                    // can see that markup has h2 tag with user name after user fetching
+});
+
+describe("events", () => {
+  it("checkbox click", () => {
+    const handleChange = jest.fn();                 //create abstract checkbox handler function
+    render(<input type="checkbox" onChange={handleChange} />);
+    // const checkbox = container.firstChild;       //Disallow direct Node access
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();             // checkbox is not checked
+    fireEvent.click(checkbox);                      // do click on checkbox
+    expect(handleChange).toHaveBeenCalledTimes(1);  // after clicking handleChange fuc was called 1 time
+    expect(checkbox).toBeChecked();                 // checkbox is checked
   });
-  it('find img with class', () => {
-    render(<App />);
-    expect(screen.getByAltText(/search icon/i)).toHaveClass('search-img'); // get img with this alt text and check class 'search-img'
-  });
-  it('input tests', () => {
-    render(<App />);
-    // expect(screen.getByLabelText(/search:/i)).not.toBeRequired();        // input has no required attr
-    expect(screen.getByLabelText(/search:/i)).toBeRequired();               // get input with this label text and check is it required
-    expect(screen.getByLabelText(/search:/i)).toBeEmptyDOMElement();        // check if input is empty (toBeEmpty - deprecated)
-    expect(screen.getByLabelText(/search:/i)).toHaveAttribute('id');        // check if input has attr id 
-    expect(screen.getByLabelText(/search:/i)).not.toHaveStyle('color: red');// check input has no style 'color: red'
+  it("input focus", () => {
+    render(<input type="text" data-testid="simple-input"/>);
+    const input = screen.getByTestId('simple-input');   // get element with test id
+    expect(input).not.toHaveFocus();                    // input has no focuse
+    input.focus();                                      // do focuse on input (wihtout fireEvent)
+    expect(input).toHaveFocus();                        // input has a focuse
   });
 });
