@@ -1,4 +1,4 @@
-import { render, act, screen, findAllByRole } from '@testing-library/react';
+import { render, act, screen } from '@testing-library/react';
 import axios from 'axios';
 import userEvent from '@testing-library/user-event';
 import App from './App';
